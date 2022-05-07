@@ -18,10 +18,4 @@ function comp {
 	fi
 }
 
-if [ $# -eq 0 ]; then
-	for i in $(ls examples/*.dai); do
-		comp $i
-	done
-else
-	comp $1
-fi
+comp $1
