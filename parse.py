@@ -13,6 +13,8 @@ class Parser:
 
         self.curToken = None
         self.peekToken = None
+        self.returnc = None
+        self.cinclude = set()
         self.nextToken()
         self.nextToken()    # Call this twice to initialize current and peek.
 
@@ -49,7 +51,6 @@ class Parser:
     # program ::= {statement}
     def program(self):
         self.emitter.headerLine("#include <stdio.h>")
-        self.emitter.headerLine("int main(void){")
         
         # Since some newlines are required in our grammar, need to skip the excess.
         while self.checkToken(TokenType.NEWLINE):
@@ -58,9 +59,18 @@ class Parser:
         # Parse all the statements in the program.
         while not self.checkToken(TokenType.EOF):
             self.statement()
+        
+        print(self.cinclude)
+        for i in self.cinclude:
+            self.emitter.headerLine("#include <" + i + ">")#
+        
+        self.emitter.headerLine("int main(void){")
 
         # Wrap things up.
-        self.emitter.emitLine("return 0;")
+        if self.returnc == None:
+            self.abort("No return statement found.")
+        else:
+            self.emitter.emitLine(f"return {self.returnc};")
         self.emitter.emitLine("}")
 
         # Check that each label referenced in a GOTO is declared.
@@ -140,6 +150,28 @@ class Parser:
             self.labelsGotoed.add(self.curToken.text)
             self.emitter.emitLine("goto " + self.curToken.text + ";")
             self.match(TokenType.IDENT)
+        
+        # "CINC" expression
+        
+        elif self.checkToken(TokenType.CINC):
+            self.nextToken()
+            self.cinclude.add(self.curToken.text)
+            self.match(TokenType.STRING)
+        
+        # "RETURN" expression
+        elif self.checkToken(TokenType.RETURN):
+            self.nextToken()
+            self.returnc = self.curToken.text
+            self.match(TokenType.NUMBER)
+        
+        # "CLINE" expression
+        elif self.checkToken(TokenType.CLINE):
+            self.nextToken()
+            text = self.curToken.text
+            # swap ' with " in the text
+            text = text.replace("'", "\"")
+            self.emitter.emitLine(text)
+            self.match(TokenType.STRING)
 
         # "LET" ident = expression
         elif self.checkToken(TokenType.LET):

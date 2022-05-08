@@ -180,7 +180,9 @@ class TokenType(enum.Enum):
     WHILE = 109
     REPEAT = 110
     ENDWHILE = 111
-    DAIGET = 112
+    RETURN = 112
+    CINC = 113
+    CLINE = 114
     # Operators.
     EQ = 201  
     PLUS = 202
