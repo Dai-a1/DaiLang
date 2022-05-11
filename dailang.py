@@ -2,13 +2,15 @@ from lex import *
 from emit import *
 from parse import *
 import sys
+import argparse
+import subprocess
 
-def main():
+def main(file=None):
     print("Dai Compiler!")
 
-    if len(sys.argv) != 2:
+    if file == None:
         sys.exit("Error: Compiler needs source file as argument.")
-    with open(sys.argv[1], 'r') as inputFile:
+    with open(file, 'r') as inputFile:
         input = inputFile.read()
 
     # Initialize the lexer, emitter, and parser.
@@ -19,5 +21,11 @@ def main():
     parser.program() # Start the parser.
     emitter.writeFile() # Write the output to file.
     print("Compiling completed.")
+    subprocess.call(["gcc", "out.c", "-o", "out"])
 
-main()
+argparser = argparse.ArgumentParser(description="Dai Compiler")
+argparser.add_argument("file", help="Source file to compile.")
+args = argparser.parse_args()
+
+if args.file:
+    main(args.file)
