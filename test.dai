@@ -1,2 +1,2 @@
-CLINE "printf('Hello World!');"
+PRINT "Hi"
 RETURN 0

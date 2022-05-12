@@ -3,9 +3,10 @@ from lex import *
 
 # Parser object keeps track of current token, checks if the code matches the grammar, and emits code along the way.
 class Parser:
-    def __init__(self, lexer, emitter):
+    def __init__(self, lexer, emitter, sandbox):
         self.lexer = lexer
         self.emitter = emitter
+        self.sandbox = sandbox
 
         self.symbols = set()    # All variables we have declared so far.
         self.labelsDeclared = set() # Keep track of all labels declared
@@ -154,9 +155,12 @@ class Parser:
         # "CINC" expression
         
         elif self.checkToken(TokenType.CINC):
-            self.nextToken()
-            self.cinclude.add(self.curToken.text)
-            self.match(TokenType.STRING)
+            if self.sandbox:
+                self.abort("CINC is not allowed in sandbox mode.")
+            else:
+                self.nextToken()
+                self.cinclude.add(self.curToken.text)
+                self.match(TokenType.STRING)
         
         # "RETURN" expression
         elif self.checkToken(TokenType.RETURN):
@@ -166,12 +170,15 @@ class Parser:
         
         # "CLINE" expression
         elif self.checkToken(TokenType.CLINE):
-            self.nextToken()
-            text = self.curToken.text
-            # swap ' with " in the text
-            text = text.replace("'", "\"")
-            self.emitter.emitLine(text)
-            self.match(TokenType.STRING)
+            if self.sandbox:
+                self.abort("CLINE is not allowed in sandbox mode.")
+            else:
+                self.nextToken()
+                text = self.curToken.text
+                # swap ' with " in the text
+                text = text.replace("'", "\"")
+                self.emitter.emitLine(text)
+                self.match(TokenType.STRING)
 
         # "LET" ident = expression
         elif self.checkToken(TokenType.LET):
