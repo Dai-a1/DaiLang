@@ -1,3 +1,4 @@
+import difflib
 import sys
 from lex import *
 
@@ -17,6 +18,7 @@ class Parser:
         self.returnc = None
         self.cinclude = set()
         self.nextToken()
+        self.fn = []
         self.nextToken()    # Call this twice to initialize current and peek.
 
     # Return true if the current token matches.
@@ -195,6 +197,33 @@ class Parser:
             
             self.expression()
             self.emitter.emitLine(";")
+
+        # "FN" string "THEN" block "ENDFN"
+        elif self.checkToken(TokenType.FN):
+            self.nextToken()
+            self.emitter.emit("int ")
+            self.fn.append(self.curToken.text)
+            self.emitter.emit(self.curToken.text + "(void")
+            self.nextToken()
+
+            self.match(TokenType.THEN)
+            self.nl()
+            self.emitter.emitLine("){")
+
+            # Zero or more statements in the body.
+            while not self.checkToken(TokenType.ENDFN):
+                self.statement()
+
+            self.match(TokenType.ENDFN)
+            self.emitter.emitLine("}")
+
+        # "CALL" string
+        elif self.checkToken(TokenType.CALL):
+            self.nextToken()
+            if self.curToken.text not in self.fn:
+                self.abort("Function not found: " + self.curToken.text + ". Did you mean: '" + difflib.get_close_matches(self.curToken.text, self.fn)[0] + "'?")
+            self.emitter.emit(self.curToken.text + "();")
+            self.match(TokenType.STRING)
 
         # "INPUT" ident
         elif self.checkToken(TokenType.INPUT):

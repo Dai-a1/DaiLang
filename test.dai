@@ -1,2 +1,6 @@
-PRINT "Hi"
+FN "hi" THEN
+    PRINT "hi"
+ENDFN
+PRINT "Hello"
+CALL "hi"
 RETURN 0

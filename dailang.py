@@ -27,7 +27,8 @@ def main(file=None, sandbox=False):
     os.remove("out.c")
 
 argparser = argparse.ArgumentParser(description="Dai Compiler")
-argparser.add_argument("file", help="Source file to compile.")
+argparser.add_argument("-f", "--file", help="Source file to compile.")
+argparser.add_argument("-ls", "--list-tokens", help="List all tokens.", action="store_true")
 # sandbox arg
 argparser.add_argument("-s", "--sandbox", help="Run in sandbox mode.", action="store_true")
 args = argparser.parse_args()
@@ -37,3 +38,10 @@ if args.file:
         main(args.file, sandbox=True)
     else:
         main(args.file)
+elif args.list_tokens:
+    import lex
+    for i in lex.TokenType:
+        # Strip the TokenType. from the string.
+        print(str(i)[10:])
+else:
+    argparser.print_help()

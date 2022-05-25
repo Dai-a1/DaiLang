@@ -183,6 +183,9 @@ class TokenType(enum.Enum):
     RETURN = 112
     CINC = 113
     CLINE = 114
+    FN = 115
+    ENDFN = 116
+    CALL = 117
     # Operators.
     EQ = 201  
     PLUS = 202
